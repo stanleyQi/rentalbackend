@@ -8,6 +8,6 @@ namespace rentalbackend.Entities
 {
     public class ApplicationUser:IdentityUser
     {
-
+        public string Address { get; set; }
     }
 }

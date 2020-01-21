@@ -4,4 +4,5 @@
 . 实现login(signinmanager,FluentValidation)
 . 实现register(usermanager,FluentValidation)
 . 配置authentication和authorization
+. Extend identity user and add corresponding field by using magration
 

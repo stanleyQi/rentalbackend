@@ -42,7 +42,7 @@ namespace rentalbackend
             services.AddDbContext<AuthDbContext>();
 
             // ===== Add Identity & Config the password complaxity========
-            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequiredLength = 10;
                 options.Password.RequiredUniqueChars = 3;

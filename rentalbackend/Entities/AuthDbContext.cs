@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace rentalbackend.Entities
 {
-    public class AuthDbContext : IdentityDbContext
+    public class AuthDbContext : IdentityDbContext<ApplicationUser>
     {
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

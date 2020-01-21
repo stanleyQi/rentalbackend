@@ -7,6 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20200121094319_extend-identityuser.cs" />
+    <Compile Remove="Migrations\20200121094319_extend-identityuser.Designer.cs" />
+    <Compile Remove="Migrations\20200121094911_extend-identityuser.cs" />
+    <Compile Remove="Migrations\20200121094911_extend-identityuser.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -18,8 +25,8 @@
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.9.5" />
 
     <PackageReference Include="MySql.Data.Core" Version="7.0.4-IR-191" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.1.2" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.2.6" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.2.6" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.2.6-rc-*" />
   </ItemGroup>
 

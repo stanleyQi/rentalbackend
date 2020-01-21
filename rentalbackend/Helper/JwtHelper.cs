@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using rentalbackend.Entities;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,7 +13,7 @@ using System.Threading.Tasks;
 namespace rentalbackend.Helper
 {
     public class JwtHelper { 
-        public static async Task<object> GenerateJwtToken(string email, IdentityUser user, IConfiguration conf)
+        public static async Task<object> GenerateJwtToken(string email, ApplicationUser user, IConfiguration conf)
         {
             var claims = new List<Claim>
                 {
