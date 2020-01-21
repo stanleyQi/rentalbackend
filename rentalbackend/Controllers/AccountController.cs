@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using rentalbackend.Dto;
+using rentalbackend.Entities;
 using rentalbackend.Helper;
 using System;
 using System.Collections.Generic;
@@ -11,11 +13,15 @@ using System.Threading.Tasks;
 namespace rentalbackend.Controllers
 {
     [Route("[controller]/[action]")]
-    public class AccountController:Controller
+    [ApiController]
+    [Authorize]
+    public class AccountController:ControllerBase
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _configuration;
+
+        //private readonly IEmailSender _emailSender;
 
         public AccountController(
             UserManager<IdentityUser> userManager,
@@ -29,20 +35,31 @@ namespace rentalbackend.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<object> Login([FromBody] LoginDto model)
         {
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
-
-            if (result.Succeeded)
+            try
             {
-                var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
-                return await JwtHelper.GenerateJwtToken(model.Email, appUser, _configuration);
-            }
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, false, false);
 
-            throw new ApplicationException("INVALID_LOGIN_ATTEMPT");
+                if (result.Succeeded)
+                {
+                    var appUser = _userManager.Users.SingleOrDefault(r => r.Email == model.Email);
+                    return await JwtHelper.GenerateJwtToken(model.Email, appUser, _configuration);
+                }
+
+                return new { code = "00008", message = "Operation errors", error="An operation error happened." };
+            }
+            catch (Exception)
+            {
+
+                return new { code = "00007", message = "System errors", error = "An system error happened." };
+            }
+            
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<object> Register([FromBody] RegisterDto model)
         {
             var user = new IdentityUser
@@ -50,15 +67,24 @@ namespace rentalbackend.Controllers
                 UserName = model.Email,
                 Email = model.Email
             };
-            var result = await _userManager.CreateAsync(user, model.Password);
-
-            if (result.Succeeded)
+            
+            try
             {
-                await _signInManager.SignInAsync(user, false);
-                return await JwtHelper.GenerateJwtToken(model.Email, user, _configuration);
-            }
+                var result = await _userManager.CreateAsync(user, model.Password);
 
-            throw new ApplicationException("UNKNOWN_ERROR");
+                if (result.Succeeded)
+                {
+                    await _signInManager.SignInAsync(user, false);
+                    return await JwtHelper.GenerateJwtToken(model.Email, user, _configuration);
+                }
+
+                return new { code = "00008", message = "Operation errors", error = "An operation error happened." };
+            }
+            catch (Exception e)
+            {
+                return new { code = "00007", message = "System errors", error = "An system error happened." };
+            }
+            
         }
     }
 }

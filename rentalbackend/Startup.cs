@@ -4,18 +4,25 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using rentalbackend.Dto;
 using rentalbackend.Entities;
+using rentalbackend.Helper;
+using rentalbackend.Validation;
 
 namespace rentalbackend
 {
@@ -34,8 +41,13 @@ namespace rentalbackend
             // ===== Add our DbContext ========
             services.AddDbContext<AuthDbContext>();
 
-            // ===== Add Identity ========
-            services.AddIdentity<IdentityUser, IdentityRole>()
+            // ===== Add Identity & Config the password complaxity========
+            services.AddIdentity<IdentityUser, IdentityRole>(options =>
+            {
+                options.Password.RequiredLength = 10;
+                options.Password.RequiredUniqueChars = 3;
+                options.Password.RequireNonAlphanumeric = false;
+            })
                 .AddEntityFrameworkStores<AuthDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -62,12 +74,41 @@ namespace rentalbackend
                     };
                 });
 
+            // Validators
+            services.AddSingleton<IValidator<LoginDto>, LoginValidator>();
+            services.AddSingleton<IValidator<RegisterDto>, RegisterValidator>();
+
             // ===== Add MVC ========
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc(options=> {
+                var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+                options.Filters.Add(new AuthorizeFilter(policy));
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1).AddFluentValidation(); ;
+
+            // Override default modelstate
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = (context) =>
+                {
+                    var errors = context.ModelState
+                        .Values
+                        .SelectMany(x => x.Errors
+                                    .Select(p => p.ErrorMessage))
+                        .ToList();
+
+                    var result = new
+                    {
+                        Code = "00009",
+                        Message = "Validation errors",
+                        Errors = errors
+                    };
+
+                    return new BadRequestObjectResult(result);
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IServiceProvider services)
         {
             if (env.IsDevelopment())
             {
@@ -82,11 +123,12 @@ namespace rentalbackend
 
             // ===== Use Authentication ======
             app.UseAuthentication();
-            
+
             app.UseMvc();
 
             // ===== TODO:Create tables ======
             //dbContext.Database.EnsureCreated();
+            //AccountHelper.CreateUserRoles(services, Configuration);
         }
     }
 }

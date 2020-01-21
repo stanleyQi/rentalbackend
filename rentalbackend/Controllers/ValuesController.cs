@@ -9,21 +9,22 @@ namespace rentalbackend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ValuesController : ControllerBase
     {
         // GET api/values
-        [Authorize]
         [HttpGet]
+        [AllowAnonymous]
         public ActionResult<IEnumerable<string>> Get()
         {
-            return new string[] { "value1", "value2" };
+            return new string[] { "public info1", "public info2" };
         }
 
         // GET api/values/5
         [HttpGet("{id}")]
         public ActionResult<string> Get(int id)
         {
-            return "value";
+            return "secrit info.";
         }
 
         // POST api/values
